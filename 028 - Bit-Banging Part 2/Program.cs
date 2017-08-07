@@ -8,97 +8,75 @@ using System.Threading;
 
 namespace BitBangingPart2 {
     public class Program {
-        static GpioController GPIO = GpioController.GetDefault();
-        static GpioPin ClockPin = GPIO.OpenPin(FEZPandaIII.GpioPin.D7);
-        static GpioPin DataPin = GPIO.OpenPin(FEZPandaIII.GpioPin.D6);
-        static ushort CmdMode = 0;
+        private const ushort CmdMode = 0;
 
-        static void Send16bit(ushort data) {
-            for (int i = 0; i < 16; i++) {
-                if ((data & 0x8000) > 0)
-                    DataPin.Write(GpioPinValue.High);
-                else
-                    DataPin.Write(GpioPinValue.Low);
-
-                if (ClockPin.Read() == GpioPinValue.High)
-                    ClockPin.Write(GpioPinValue.Low);
-                else
-                    ClockPin.Write(GpioPinValue.High);
-
-                data <<= 1;
-            }
-        }
-
-        static void WriteLEDs(ushort[] leds) {
-            Send16bit(CmdMode);
-
-            Thread.Sleep(1);
-
-            if (ClockPin.Read() == GpioPinValue.High)
-                ClockPin.Write(GpioPinValue.Low);
-            else
-                ClockPin.Write(GpioPinValue.High);
-
-            if (ClockPin.Read() == GpioPinValue.High)
-                ClockPin.Write(GpioPinValue.Low);
-            else
-                ClockPin.Write(GpioPinValue.High);
-
-            if (ClockPin.Read() == GpioPinValue.High)
-                ClockPin.Write(GpioPinValue.Low);
-            else
-                ClockPin.Write(GpioPinValue.High);
-
-            if (ClockPin.Read() == GpioPinValue.High)
-                ClockPin.Write(GpioPinValue.Low);
-            else
-                ClockPin.Write(GpioPinValue.High);
-
-            for (int count = 0; count < 12; count++) {
-                Send16bit(leds[count]);
-            }
-
-            Send16bit(CmdMode);
-
-            if (ClockPin.Read() == GpioPinValue.High)
-                ClockPin.Write(GpioPinValue.Low);
-            else
-                ClockPin.Write(GpioPinValue.High);
-
-            for (int count = 12; count < 24; count++) {
-                Send16bit(leds[count]);
-            }
-
-            //latch
-            for (int i = 0; i < 8; i++) {
-                if (DataPin.Read() == GpioPinValue.High)
-                    DataPin.Write(GpioPinValue.Low);
-                else
-                    DataPin.Write(GpioPinValue.High);
-            }
-        }
+        private static GpioPin clock;
+        private static GpioPin data;
 
         public static void Main() {
-            ClockPin.SetDriveMode(GpioPinDriveMode.Output);
-            DataPin.SetDriveMode(GpioPinDriveMode.Output);
+            var gpioController = GpioController.GetDefault();
 
-            ushort[] leds = new ushort[24];// 24 LEDs
-            int k = 0;
+            clock = gpioController.OpenPin(FEZ.GpioPin.D7);
+            clock.SetDriveMode(GpioPinDriveMode.Output);
+
+            data = gpioController.OpenPin(FEZ.GpioPin.D6);
+            data.SetDriveMode(GpioPinDriveMode.Output);
+
+            var leds = new ushort[24];
+            var current = 0;
 
             while (true) {
-                if (leds[k] > 0)
-                    leds[k] = 0;
+                if (leds[current] > 0)
+                    leds[current] = 0;
                 else
-                    leds[k] = 0x0f;
+                    leds[current] = 0x0F;
 
-                k++;
-                if (k == 24)
-                    k = 0;
+                current++;
+
+                if (current == 24)
+                    current = 0;
 
                 WriteLEDs(leds);
 
                 Thread.Sleep(30);
             }
         }
+
+        private static void Write(ushort value) {
+            for (var i = 0; i < 16; i++) {
+                data.Write((value & 0x8000) > 0 ? GpioPinValue.High : GpioPinValue.Low);
+
+                Toggle(clock);
+
+                value <<= 1;
+            }
+        }
+
+        private static void WriteLEDs(ushort[] leds) {
+            Write(CmdMode);
+
+            Thread.Sleep(1);
+
+            Toggle(clock);
+            Toggle(clock);
+            Toggle(clock);
+            Toggle(clock);
+
+            for (var count = 0; count < 12; count++)
+                Write(leds[count]);
+
+            Write(CmdMode);
+
+            Toggle(clock);
+
+            for (var count = 12; count < 24; count++)
+                Write(leds[count]);
+
+            //Latch
+            for (var i = 0; i < 8; i++)
+                Toggle(data);
+        }
+
+        private static void Toggle(GpioPin pin) => pin.Write(pin.Read() == GpioPinValue.High ? GpioPinValue.Low : GpioPinValue.High);
     }
 }
