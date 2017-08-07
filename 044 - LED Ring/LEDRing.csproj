@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{5BD8AD94-56EF-41FB-98DE-8FF88448D068}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>LED_ring</RootNamespace>
-    <AssemblyName>LED_ring</AssemblyName>
+    <RootNamespace>LEDRing</RootNamespace>
+    <AssemblyName>LEDRing</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -39,7 +39,6 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Startup.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

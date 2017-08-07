@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using System.Threading;
 
-namespace LED_ring {
+namespace LEDRing {
     [DebuggerNonUserCode]
     public class Startup {
         public static void Main() {
@@ -28,7 +28,6 @@ namespace LED_ring {
         public static Buttons Buttons { get; } = new Buttons();
         public static Buzzer Buzzer { get; } = new Buzzer();
         public static Display Display { get; } = new Display();
-        public static Expansion Expansion { get; } = new Expansion();
         public static LightBulb LightBulb { get; } = new LightBulb();
         public static LightSensor LightSensor { get; } = new LightSensor();
         public static ServoMotors ServoMotors { get; } = new ServoMotors();
